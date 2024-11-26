@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Generator with Sidebar</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #e6f0ff;
+            margin: 0;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            height: 100%;
+            width: 250px;
+            background-color: #1E3A8A;
+            box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            z-index: 1000;
+            transition: left 0.5s ease;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-hover-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 30px;
+            height: 100%;
+            cursor: pointer;
+            z-index: 1010;
+        }
+
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+            flex-grow: 1;
+            transition: margin-left 0.5s ease;
+        }
+
+        .main-content.shifted {
+            margin-left: 250px;
+        }
+
+        .sidebar nav a {
+            display: flex;
+            align-items: center;
+            font-size: 1.1rem;
+            padding: 12px 15px;
+            color: #D1D5DB;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .sidebar nav a:hover, .sidebar nav a.active {
+            background-color: #3B82F6;
+            color: #FFFFFF;
+        }
+
+        .sidebar .footer {
+            font-size: 0.9rem;
+            color: #9CA3AF;
+            text-align: center;
+            padding-top: 10px;
+            border-top: 1px solid #374151;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar-hover-area" onclick="toggleSidebar()"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="header mb-4 text-white font-bold">SMIDGE</div>
+        <nav class="flex-grow">
+            <a href="home.html">
+                <i class="fas fa-home"></i> Home
+            </a>
+            <a href="recipe.html" class="active">
+                <i class="fas fa-utensils"></i> Recipe Recommendations
+            </a>
+            <a href="expiry_reminder.html">
+                <i class="fas fa-clock"></i> Expiry Reminder
+            </a>
+            <a href="#contact">
+                <i class="fas fa-envelope"></i> Contact
+            </a>
+        </nav>
+        <div class="footer">
+            <p>&copy; 2024 YourAppName</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main-content">
+        <h1 class="text-2xl font-bold mb-6">Recipe Generator</h1>
+        
+        <form id="recipeForm" class="space-y-4">
+            <div>
+                <label class="block text-lg">Ingredients (comma-separated):</label>
+                <input type="text" name="ingredients" required class="border p-2 rounded w-full">
+            </div>
+
+            <div>
+                <label class="block text-lg">Meal Type:</label>
+                <div class="flex space-x-4">
+                    <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded meal-btn" onclick="setMealType('Breakfast')">Breakfast</button>
+                    <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded meal-btn" onclick="setMealType('Lunch')">Lunch</button>
+                    <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded meal-btn" onclick="setMealType('Dinner')">Dinner</button>
+                </div>
+                <input type="hidden" name="meal_type" id="meal_type">
+            </div>
+
+            <div>
+                <label class="block text-lg">Dietary Restrictions:</label>
+                <input type="text" name="dietary_restrictions" class="border p-2 rounded w-full">
+            </div>
+
+            <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded">Generate Recipe</button>
+        </form>
+
+    </form>
+
+    {% if recipe %}
+    <h2 class="text-xl font-semibold mt-6">Generated Recipe:</h2>
+    <pre class="bg-gray-200 p-4 rounded">{{ recipe }}</pre>
+    {% endif %}
+    </div>
+
+    <script>
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            sidebar.classList.toggle('active');
+            mainContent.classList.toggle('shifted');
+        }
+
+        // Set meal type based on button click
+        function setMealType(type) {
+            document.getElementById('meal_type').value = type;
+            document.querySelectorAll('.meal-btn').forEach(btn => btn.classList.remove('bg-blue-600'));
+            event.target.classList.add('bg-blue-600');
+        }
+
+        // Submit form via AJAX
+      
+            // Submit form via AJAX
+            document.getElementById('recipeForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+        
+                fetch('/', {  // Change this line to point to the root endpoint
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams(new FormData(this))
+                })
+                .then(response => response.text()) // Changed from json() to text() since we are rendering HTML
+                .then(data => {
+                    // Update the HTML of the page with the response data
+                    document.body.innerHTML = data;
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        </script>
+        
+</body>
+</html>
